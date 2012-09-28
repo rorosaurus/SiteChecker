@@ -1,5 +1,7 @@
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
+import javax.sound.sampled.LineEvent;
+import javax.sound.sampled.LineListener;
 import javax.swing.*;
 import java.io.BufferedReader;
 import java.io.File;
@@ -19,7 +21,7 @@ public class SiteChecker {
     private static final String phrase = "How I Met Your Mother Season 8";
 
     public static void main(String[] args){
-        alertUser();
+        alertUser("This is a test!");
 //        scanForString();
 //        scanForChange();
     }
@@ -46,7 +48,7 @@ public class SiteChecker {
 
                 // Compare new and old.  If there's a change, notify the user and break.
                 if(webpage.contains(phrase)){
-                    alertUser();
+                    alertUser("The string \"" + phrase + "\" has been found at the URL \"" + url + "\"!");
                     break;
                 }
                 // Otherwise, try again in five seconds
@@ -98,7 +100,7 @@ public class SiteChecker {
 
                     // Compare new and old.  If there's a change, notify the user and break.
                     if(!newHTML.equals(originalHTML)){
-                        alertUser();
+                        alertUser("The contents at the URL \"" + url + "\" have changed!");
                         break;
                     }
                     // Otherwise, try again in five seconds
@@ -111,28 +113,41 @@ public class SiteChecker {
             // Bad program, bad!
             e.printStackTrace();
         }
-        System.out.println("YO, BITCH!");
     }
 
-    public static void alertUser(){
-        for(int i=0; i < 10; i++){
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    try {
-                        Clip clip = AudioSystem.getClip();
-                        String programDirectory = System.getProperty("user.dir");
-                        clip.open(AudioSystem.getAudioInputStream(new File(programDirectory + "/chord.wav")));
-                        clip.start();
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
+    public static void alertUser(final String alert){
+        System.out.println(alert);
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                try {
+                    // Make a popup
+                    JFrame frame = new JFrame("SiteChecker");
+
+                    JTextArea outputArea = new JTextArea(alert);
+                    JScrollPane scrollPane = new JScrollPane(outputArea);
+                    frame.add(scrollPane);
+
+                    outputArea.setLineWrap(true);
+                    outputArea.setAutoscrolls(true);
+                    outputArea.setEditable(false);
+
+                    frame.setSize(300, 200);
+                    frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                    frame.setLocationRelativeTo(null);
+                    frame.setVisible(true);
+
+                    // Play a short clip
+                    Clip clip = AudioSystem.getClip();
+                    clip.loop(Clip.LOOP_CONTINUOUSLY);
+
+                    String programDirectory = System.getProperty("user.dir");
+                    clip.open(AudioSystem.getAudioInputStream(new File(programDirectory + "/notify.wav")));
+
+                    clip.start();
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
-            });
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
             }
-        }
+        });
     }
 }
