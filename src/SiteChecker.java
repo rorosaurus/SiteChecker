@@ -3,8 +3,8 @@ import gui.AlertPopup;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
+import java.io.*;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 
@@ -53,16 +53,30 @@ public class SiteChecker {
         txtPhrase.setText(phrase);
         frame.add(txtPhrase);
 
-        JButton btnCheck = new JButton();
-        btnCheck.setLocation(100, 100);
+        JLabel lblDir = new JLabel();
+        lblDir.setLocation(20, 100);
+        lblDir.setSize(50, 30);
+        lblDir.setText("Directory");
+        frame.add(lblDir);
+
+        final JTextField txtDir = new JTextField();
+        txtDir.setLocation(80, 100);
+        txtDir.setSize(200, 30);
+        txtDir.setText("D:\\");
+        frame.add(txtDir);
+
+        final JButton btnCheck = new JButton();
+        btnCheck.setLocation(100, 140);
         btnCheck.setSize(100, 30);
         btnCheck.setText("Check");
         btnCheck.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                //scanForChange(txtUrl.getText());
+                btnCheck.setText("Checking...");
                 String episodePage = getEpisodePage(txtUrl.getText(), txtPhrase.getText());
                 String downloadPage = null;
                 String actualDownloadPage = null;
+                String realDownloadPage = null;
+                String downloadLink = null;
                 if(episodePage != null) {
                     downloadPage = getLinkFromRight(episodePage, "\">Mediafire", "href=\"");
                 }
@@ -70,8 +84,19 @@ public class SiteChecker {
                     actualDownloadPage = getLinkFromLeft(downloadPage, "var url = '", "';");
                 }
                 if(actualDownloadPage != null) {
-                    alertUser(actualDownloadPage);
+                    realDownloadPage = getLinkFromLeft(actualDownloadPage, "URL=", "\">");
                 }
+                if(realDownloadPage != null) {
+                    downloadLink = getLinkFromLeft(realDownloadPage, "kNO = \"", "\";");
+                }
+                if(downloadLink != null) {
+                    try {
+                        saveUrl(txtDir.getText() + "video.rar", downloadLink);
+                    } catch (IOException e1) {
+                        handleException(e1);
+                    }
+                }
+                btnCheck.setText("Check");
             }
         });
         frame.add(btnCheck);
@@ -97,6 +122,7 @@ public class SiteChecker {
                 }
                 // Otherwise, try again in five seconds
                 else{
+
                     try {
                         Thread.sleep(refreshDelay);
                     } catch (InterruptedException e) {
@@ -167,7 +193,6 @@ public class SiteChecker {
         } catch (Exception e) {
             handleException(e);
         }
-
         return null;
     }
 
@@ -222,6 +247,34 @@ public class SiteChecker {
         } catch (Exception e) {
             handleException(e);
         }
+    }
+
+    public static void saveUrl(String filename, String urlString) throws MalformedURLException, IOException
+    {
+        BufferedInputStream in = null;
+        FileOutputStream fout = null;
+        try
+        {
+            in = new BufferedInputStream(new URL(urlString).openStream());
+            fout = new FileOutputStream(filename);
+
+            byte data[] = new byte[1024];
+            int count;
+            while ((count = in.read(data, 0, 1024)) != -1)
+            {
+                fout.write(data, 0, count);
+            }
+        }
+        finally
+        {
+            if (in != null)
+                in.close();
+            if (fout != null)
+                fout.close();
+        }
+
+        Runtime rt = Runtime.getRuntime();
+        Process pr = rt.exec("C:\\Program Files (x86)\\7-Zip\\7z x D:\\video.rar -od:\\video\\");
     }
 
     public static void alertUser(final String alert){
