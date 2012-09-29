@@ -1,12 +1,9 @@
 import gui.AlertPopup;
 
-import javax.sound.sampled.AudioSystem;
-import javax.sound.sampled.Clip;
-import javax.sound.sampled.LineEvent;
-import javax.sound.sampled.LineListener;
 import javax.swing.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLConnection;
@@ -22,19 +19,60 @@ public class SiteChecker {
 
     // TODO: prompt the user for these in a GUI
     // The URL to hit
-    private static final String url = "http://www.awesomedl.com/search/label/How%20I%20Met%20Your%20Mother";
+    //private static final String url = "http://www.awesomedl.com/search/label/How%20I%20Met%20Your%20Mother";
     // The string to search for at the URL (if that method is executed)
-    private static final String phrase = "How I Met Your Mother Season 8";
+    //private static final String phrase = "How I Met Your Mother Season 8";
     // The milliseconds in-between every refresh
     private static final int refreshDelay = 5000;
 
     public static void main(String[] args){
-        alertUser("This is a test!");
-//        scanForString();
-//        scanForChange();
+        // TODO: find a way to avoid using finals
+        JFrame frame = new JFrame();
+
+        JLabel lblUrl = new JLabel();
+        lblUrl.setLocation(20, 20);
+        lblUrl.setSize(30, 30);
+        lblUrl.setText("URL");
+        frame.add(lblUrl);
+
+        final JTextField txtUrl = new JTextField();
+        txtUrl.setLocation(80, 20);
+        txtUrl.setSize(200, 30);
+        frame.add(txtUrl);
+
+        JLabel lblPhrase = new JLabel();
+        lblPhrase.setLocation(20, 60);
+        lblPhrase.setSize(50, 30);
+        lblPhrase.setText("Phrase");
+        frame.add(lblPhrase);
+
+        final JTextField txtPhrase = new JTextField();
+        txtPhrase.setLocation(80, 60);
+        txtPhrase.setSize(200, 30);
+        frame.add(txtPhrase);
+
+        final JButton btnCheck = new JButton();
+        btnCheck.setLocation(100, 100);
+        btnCheck.setSize(100, 30);
+        btnCheck.setText("Check");
+        btnCheck.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                btnCheck.setText("Scanning...");
+                scanForChange(txtUrl.getText(), txtPhrase.getText());
+                btnCheck.setText("Check");
+            }
+        });
+        frame.add(btnCheck);
+
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setLayout(null);
+        frame.setLocationRelativeTo(null);
+        frame.setSize(300, 300);
+        frame.setTitle("SiteChecker");
+        frame.setVisible(true);
     }
 
-    public static void scanForString(){
+    /*public static void scanForString(){
         // Initialize variables
         String webpage = "";
         String inputLine;
@@ -68,9 +106,11 @@ public class SiteChecker {
         } catch (Exception e) {
             handleException(e);
         }
-    }
+    } */
 
-    public static void scanForChange(){
+    public static void scanForChange(String url, String phrase){
+        // TODO: check for null strings and valid url
+
         // Initialize variables
         String originalHTML = "";
         String newHTML = "";
